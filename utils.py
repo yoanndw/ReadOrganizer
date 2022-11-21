@@ -1,4 +1,6 @@
 def score(s1, s2):
+    """Count mismatches between s1 and s2"""
+
     subs = 0
     for i in range(len(s1)):
         if s1[i] != s2[i]:
@@ -7,6 +9,8 @@ def score(s1, s2):
     return subs
 
 def revcomp(s):
+    """Reverse-complement of s"""
+
     rev = ""
     for c in reversed(s):
         if c == 'A':
@@ -22,5 +26,7 @@ def revcomp(s):
 
     return rev
 
+# Tests of revcomp
 if __name__ == "__main__":
     print(revcomp("ACCTTGGA"))
+    print(revcomp("ACTCTAAACA"))
