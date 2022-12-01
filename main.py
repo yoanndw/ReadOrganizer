@@ -1,4 +1,6 @@
+import argparse
 import mapping
+import readfiles
 
 ref = "AGAGCTGGTCCTAACCCGGAGACCGCAGGCTGCGCGCGTATCGCAGCATCAGGCATTACGCCGCATCGAGTGCATGCACGAGAGAAGGAAGGGCACTGTTAGCTACCAGTCTACCCTAAATAAGATTATACACATCTTTGAGTTTTTTCGACCATCAAGTAGCGAAACGGATGTAGCGCTTCCCGACGGACTTCATAGGCCGAGCTGGTCCTAACCCGGAGACCGCAGGCTGCGCGCGTATCGCAGCATCTGGCATTACGCCGCATCGAGTGCATGCACGAGAGAAGGAAGGGCACTGTTCGCTACCAGTCTACCCTACATAAGATTATACACATCTTTGAGTTTTTTCGTCCATCAAGTAGCGAAACGGATGTAGCGCTTCCCGACGGACTTCATAGGCGATTCACTCACGGTCGATTGAGCCGGGCGGAGCATGCTACACGTGTAAATGTTCTCGGTTAACTATTATGGTTTGGATGATTGGTGCCAGTGTTGCTTGCGTCTGACGAGTACACACCCTATAGAGAAAGAATACCTCATGTTTGCGTAACGAGCGTTCAATTTCCTCCTGTTTGTACCTTACCCCGAGGGTTATCGAACCTTGCGGGCTGGGTCGGAAAACTTGTCTTAGAGGCCTGCGACCGTGATTACATTGCTACAGATTGTCCCCATTGTTCCGCGGAGGCATTTTCGCAGGACGTCTGATGTAATGCGGTTTCCCTTGAAGGATAGGCATAATTTGATTGATCACTTCACTGCGATCTAGCTATGTTTAGAGTAATAGTTTCCAACCCACTGAGGCACTCTCGTTCTGTGAAACAGTTAGGCCGGTTGCCGTGCGCAGCAACATGGTGTGGACACATCTCCCAGCCTGTTGAATGACGGCCTAGTGTCAGGAATTAGAGAGCCTTAACCCTATCAGGGTTGTCCCGACAGTTGACATCGCCCGAGATGGCTCTTTTGAAGGGCCCCAAGATCGGCTGCATCTACTTGGCACAAC"
 
@@ -24,6 +26,32 @@ with open("real-data/humch1_100Kb_reads_120x.txt", "r") as f:
     for l in f.readlines():
         reads_hum.append(l.strip())
 
+parser = argparse.ArgumentParser(
+    prog="ReadOrganizer",
+    description="Re-organize reads to improve sequence compression"
+)
+
+parser.add_argument("-i", "--input", required=True, help="input reads file")
+parser.add_argument("-r", "--reference", required=True, help="reference genome file")
+parser.add_argument("-k", type=int, help="seed size (only for seed-and-extend)")
+parser.add_argument("-m", "--method", choices=["seed", "fast"], required=True, help="mapping method: 'seed' for seed-and-extend, 'fast' for faster")
+parser.add_argument("-o", "--output", help="output file")
+
+args = parser.parse_args()
+print(args)
+
+ref = readfiles.read_ref(args.reference)
+reads = readfiles.read_reads(args.input)
+
+#print("REF=", ref)
+#print("READS=", reads)
+
+if args.method == "seed":
+    mapper = mapping.MappingBest(ref, reads, k=args.k)
+else:
+    raise Exception("not implemented")
+
+res = mapper.mapping()
 
 #mapper = mapping.MappingBest(ref, [read1, read2, read3, read4, read5, read6, read7, read8, read9, read10, read11], k=5)
 mapper = mapping.MappingBest(ref, reads_hum, k=10)
@@ -41,7 +69,5 @@ with open("output.txt", 'a') as f:
 
     if -1 in res:
         for r in res.get(-1):
-            print("hello")
             f.write(r)
-
-#mapper.test()
+            f.write("\n")
