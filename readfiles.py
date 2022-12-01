@@ -1,6 +1,9 @@
 def read_ref(filename):
     with open(filename, "r") as f:
-        return f.read()
+        ref = f.readline()
+        while '>' in  ref:
+            ref = f.readline()
+        return ref.strip()
 
 def read_reads(filename):
     lines = []
