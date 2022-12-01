@@ -30,3 +30,4 @@ def revcomp(s):
 if __name__ == "__main__":
     print(revcomp("ACCTTGGA"))
     print(revcomp("ACTCTAAACA"))
+    print(revcomp("TCTGATGTAATGCGGTTTCGCTTGAAGGATAGGCATAATATGATTGATCACTTCACTGCCATCTAGCTATGTTTAGAGTCATAGTTTCCAACCCACTGAA"))

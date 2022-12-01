@@ -109,7 +109,6 @@ def P_in_S(P, bwt, N, R, sa):
     l = 0
     f = 0
     while i > 0:
-        print(borne_d, borne_f, N[c])
         i -= 1
         f = find_first(P[i], borne_d, bwt)
         l = find_last(P[i], borne_f, bwt)

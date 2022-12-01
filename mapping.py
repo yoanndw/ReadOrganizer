@@ -33,8 +33,6 @@ class MappingBest(Mapping):
             for p in pos:
                 res.append((i, p))
 
-                # TODO: liste tested pour éviter de tester plusieurs fois la meme chose
-
         return res
 
     def extend(self, read, positions_pair):
@@ -42,12 +40,12 @@ class MappingBest(Mapping):
         
         Params: positions_pair: result of find_seeds_for_one_read
         
-        Return: (position in ref, read content)
+        Return: (position in ref, score)
         """
         (pos_in_read, pos_in_ref) = positions_pair
         pos_ref_to_cmp = pos_in_ref - pos_in_read
 
-        # Si dépasse ref sur la gauche
+        # If overflows ref on the left
         if pos_ref_to_cmp < 0:
             return None
 
@@ -61,18 +59,37 @@ class MappingBest(Mapping):
         Return: result of extend()
         """
         seeds = self.find_seeds_for_one_read(w)
+        for i, s in enumerate(seeds):
+            #print("------")
+            #print(i, ":", s, w[s[0] : s[0] + self.k], self.ref[s[1] : s[1] + self.k])
+            pass
+        
+        tested_seeds = []
         
         l = []
         for seed in seeds:
+            start_pos_in_ref = seed[0] - seed[1]
+
+            if start_pos_in_ref in tested_seeds:
+                continue # don't execute extend if already computed
+
+            tested_seeds.append(start_pos_in_ref)
+
             score = self.extend(w, seed)
 
-            l.append(score)
+            if score is not None:
+                l.append(score)
 
         if len(l) > 0:
             min_score_seed = min(l, key=lambda pos_score: pos_score[1])
             return min_score_seed
 
         return None
+
+    def test(self):
+        #p = self.find_with_bwt("TCTGATGTAA")
+        p = self.find_with_bwt("TTACATCAGA")
+        print("TEST:", p)
 
 
     def mapping(self):
@@ -93,7 +110,11 @@ class MappingBest(Mapping):
             else:
                 best = min(score_normal, score_rev, key=lambda pos_score: pos_score[1])
             
-            if best is None: # Not found
+            if best is None: # Not found => add at the end of the output
+                if -1 not in result:
+                    result[-1] = []
+
+                result[-1].append(read)
                 continue
 
             pos = best[0]
