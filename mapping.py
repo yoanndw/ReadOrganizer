@@ -96,10 +96,16 @@ class MappingBest(Mapping):
     def mapping(self):
         """Map each read of the list in the reference
 
-        Return: dict{position in the reference : reads found at this position (list)}
-            Where each read found is the read or its reverse-complement
+        Return two dictionaries with this format:
+            position in the reference : reads found at this position (list)
+
+            The first dictionary contains the reads
+            The second one contains the reverse-complements
+
+        Return: tuple of two dictionaries, with the reads and the reverse-complements
         """
-        result = {}
+        result_normal = {}
+        result_rev = {}
         for read in self.reads_lst:
             score_normal = self.align(read)
             score_rev = self.align(utils.revcomp(read))
@@ -111,17 +117,24 @@ class MappingBest(Mapping):
             else:
                 best = min(score_normal, score_rev, key=lambda pos_score: pos_score[1])
             
-            if best is None: # Not found => add at the end of the output
-                if -1 not in result:
-                    result[-1] = []
+            if best is None: # Not found => add at the end of the output, which is result_rev
+                if -1 not in result_rev:
+                    result_rev[-1] = []
 
-                result[-1].append(read)
+                result_rev[-1].append(read)
                 continue
 
             pos = best[0]
-            if pos not in result:
-                result[pos] = []
+            if best == score_normal:
+                if pos not in result_normal:
+                    result_normal[pos] = []
 
-            result[pos].append(read) #always append read, even if the revcomp was found
+                result_normal[pos].append(read) #always append read, even if the revcomp was found
+            else:
+                if pos not in result_rev:
+                    result_rev[pos] = []
 
-        return result
+                result_rev[pos].append(read) #always append read, even if the revcomp was found
+
+
+        return result_normal, result_rev

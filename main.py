@@ -28,28 +28,40 @@ else:
     raise Exception("not implemented")
 
 res = mapper.mapping()
+res_normal, res_rev = res
 
-#mapper = mapping.MappingBest(ref, [read1, read2, read3, read4, read5, read6, read7, read8, read9, read10, read11], k=5)
-# mapper = mapping.MappingBest(ref, reads, k=10)
-# res = mapper.mapping()
+for pos, read in res_normal.items():
+    for r in read:
+        print(r, "=>", r in reads)
 
-#for pos, read in res.items():
-    #for r in read:
-        #print(r, "=>", r in reads)
-
-
-res = dict(sorted(res.items(), key=lambda item: item[0]))
+print("---- REV-----")
+for pos, read in res_rev.items():
+    for r in read:
+        print(r, "=>", r in reads)
 
 with open(args.output, 'a') as f:
     f.truncate(0)
-    for pos, read in res.items():
+    for pos in sorted(res_normal.keys()):
+        read = res_normal[pos]
+        if (pos != -1):
+            for r in read:
+                f.write(r)
+                f.write("\n")
+
+    for pos in sorted(res_rev.keys()):
+        read = res_rev[pos]
         if (pos != -1):
             for r in read:
                 f.write(r)
                 f.write("\n")
             
 
-    if -1 in res:
-        for r in res.get(-1):
+    if -1 in res_normal:
+        for r in res_normal.get(-1):
+            f.write(r)
+            f.write("\n")
+
+    if -1 in res_rev:
+        for r in res_rev.get(-1):
             f.write(r)
             f.write("\n")
