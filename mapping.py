@@ -1,5 +1,6 @@
 import bwt
 import utils
+import kark
 
 class Mapping:
     def __init__(self, ref, reads_lst, k):
@@ -11,7 +12,7 @@ class MappingBest(Mapping):
     def __init__(self, ref, reads_lst, k):
         Mapping.__init__(self, ref, reads_lst, k)
 
-        self.sa = bwt.creer_sa(self.ref)
+        self.sa = kark.simple_kark_sort(ref)
         self.bwt = bwt.get_BWT(self.ref, self.sa)
         self.N = bwt.get_N(self.bwt)
         self.R = bwt.get_R(self.bwt)
