@@ -150,14 +150,20 @@ class MappingFast(Mapping):
         self.R = bwt.get_R(self.bwt)
 
     def find_with_bwt(self, pattern):
-        """Search pattern in reference"""
+        """Search pattern in reference
+        
+        Return: List of all the found positions 
+        """
         return bwt.P_in_S(pattern, self.bwt, self.N, self.R, self.sa)
 
     def find_first_seed_for_read(self, read):
         seed = read[:self.k]
         pos = self.find_with_bwt(seed)
 
-        return pos
+        if len(pos) == 0:
+            return None
+
+        return pos[0]
 
     def extend(self, read, pos_in_ref):
         """Extend of the seed.
@@ -169,3 +175,82 @@ class MappingFast(Mapping):
         ref_to_cmp = self.ref[pos_in_ref : pos_in_ref + len(read)]
 
         return (pos_in_ref, utils.score(ref_to_cmp, read))
+
+    def align(self, w):
+        """Seed-and-extend on a specific string. Used to seed-and-extend both read and its reverse-complement.
+
+        Return: result of extend()
+        """
+        seed = self.find_first_seed_for_read(w)
+        if seed is None:
+            return None
+
+        #print("------")
+        #print(i, ":", s, w[s[0] : s[0] + self.k], self.ref[s[1] : s[1] + self.k])
+        
+        tested_seeds = []
+        
+        l = []
+        #start_pos_in_ref = seed[0] - seed[1]
+
+        #if start_pos_in_ref in tested_seeds:
+        #    continue # don't execute extend if already computed
+
+        #tested_seeds.append(start_pos_in_ref)
+
+        score = self.extend(w, seed)
+
+        if score is not None:
+            l.append(score)
+
+        if len(l) > 0:
+            min_score_seed = min(l, key=lambda pos_score: pos_score[1])
+            return min_score_seed
+
+        return None
+
+    def mapping(self):
+        """Map each read of the list in the reference
+
+        Return two dictionaries with this format:
+            position in the reference : reads found at this position (list)
+
+            The first dictionary contains the reads
+            The second one contains the reverse-complements
+
+        Return: tuple of two dictionaries, with the reads and the reverse-complements
+        """
+        result_normal = {}
+        result_rev = {}
+        for read in self.reads_lst:
+            score_normal = self.align(read)
+            score_rev = self.align(utils.revcomp(read))
+
+            if score_normal is None:
+                best = score_rev
+            elif score_rev is None:
+                best = score_normal
+            else:
+                best = min(score_normal, score_rev, key=lambda pos_score: pos_score[1])
+            
+            if best is None: # Not found => add at the end of the output, which is result_rev
+                if -1 not in result_rev:
+                    result_rev[-1] = []
+
+                result_rev[-1].append(read)
+                continue
+
+            pos = best[0]
+            if best == score_normal:
+                if pos not in result_normal:
+                    result_normal[pos] = []
+
+                result_normal[pos].append(read) #always append read, even if the revcomp was found
+            else:
+                if pos not in result_rev:
+                    result_rev[pos] = []
+
+                result_rev[pos].append(read) #always append read, even if the revcomp was found
+
+
+        return result_normal, result_rev

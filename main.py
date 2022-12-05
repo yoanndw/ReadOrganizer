@@ -23,9 +23,9 @@ reads = readfiles.read_reads(args.input)
 # print("READS=", reads)
 
 if args.method == "seed":
-    mapper = mapping.MappingBest(ref, reads, k=args.k)
+    mapper = mapping.MappingBest(ref, reads, args.k)
 else:
-    raise Exception("not implemented")
+    mapper = mapping.MappingFast(ref, reads, args.k)
 
 res = mapper.mapping()
 res_normal, res_rev = res
