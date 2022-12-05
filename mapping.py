@@ -125,3 +125,20 @@ class MappingBest(Mapping):
             result[pos].append(read) #always append read, even if the revcomp was found
 
         return result
+
+
+class MappingFast(Mapping):
+    def __init__(self, ref, reads_lst, k):
+        super().__init__(ref, reads_lst, k)
+
+        self.sa = kark.simple_kark_sort(ref)
+        self.bwt = bwt.get_BWT(self.ref, self.sa)
+        self.N = bwt.get_N(self.bwt)
+        self.R = bwt.get_R(self.bwt)
+
+    def find_with_bwt(self, pattern):
+        """Search pattern in reference"""
+        return bwt.P_in_S(pattern, self.bwt, self.N, self.R, self.sa)
+
+    def mapping(self):
+        seed = self.
