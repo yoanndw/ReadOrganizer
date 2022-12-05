@@ -121,10 +121,6 @@ class MappingBest(Mapping):
             if pos not in result:
                 result[pos] = []
 
-            if best == score_normal:
-                found_in_ref = read
-            else:
-                found_in_ref = utils.revcomp(read)
-            result[pos].append(found_in_ref)
+            result[pos].append(read) #always append read, even if the revcomp was found
 
         return result

@@ -33,6 +33,10 @@ res = mapper.mapping()
 # mapper = mapping.MappingBest(ref, reads, k=10)
 # res = mapper.mapping()
 
+#for pos, read in res.items():
+    #for r in read:
+        #print(r, "=>", r in reads)
+
 
 res = dict(sorted(res.items(), key=lambda item: item[0]))
 
